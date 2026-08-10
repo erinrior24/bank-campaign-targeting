@@ -277,7 +277,7 @@ with comparison_tab:
     )
     left, right = st.columns([1, 1.4])
     with left:
-        st.dataframe(matrix.style.format("{:,.0f}").background_gradient(cmap="Blues"), use_container_width=True)
+        st.dataframe(matrix.style.format("{:,.0f}"), use_container_width=True)
     with right:
         x1, x2, x3 = st.columns(3)
         x1.metric("True positives", f"{int(selected_row['TP']):,}")
