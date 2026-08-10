@@ -1,6 +1,5 @@
 from pathlib import Path
 
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import streamlit as st
@@ -9,7 +8,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import confusion_matrix
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
-from sklearn.tree import DecisionTreeClassifier, plot_tree
+from sklearn.tree import DecisionTreeClassifier, export_text
 
 
 st.set_page_config(
@@ -44,7 +43,11 @@ THRESHOLDS = [0.50, 0.40, 0.30, 0.20]
 
 @st.cache_data
 def load_data():
-    data_dir = Path(__file__).parent / "data"
+    app_dir = Path(__file__).parent
+    data_dir = app_dir / "data"
+    # Accept either the recommended data/ folder or GitHub's top-level upload layout.
+    if not (data_dir / "marketingcampaign_train.csv").exists():
+        data_dir = app_dir
     train = pd.read_csv(data_dir / "marketingcampaign_train.csv")
     test = pd.read_csv(data_dir / "marketingcampaign_test.csv")
     return train, test
@@ -228,20 +231,14 @@ with tree_tab:
         "Among prior successes, the number of earlier contacts and age refine the prediction."
     )
 
-    fig, ax = plt.subplots(figsize=(18, 9))
-    plot_tree(
+    tree_rules = export_text(
         tree_model.named_steps["model"],
-        feature_names=tree_names,
-        class_names=["No", "Yes"],
-        filled=True,
-        rounded=True,
-        proportion=True,
-        precision=2,
-        fontsize=7,
-        ax=ax,
+        feature_names=list(tree_names),
+        decimals=1,
     )
-    st.pyplot(fig, use_container_width=True)
-    plt.close(fig)
+    st.subheader("Displayed classification tree")
+    st.code(tree_rules, language="text")
+    st.caption("Each indentation level represents another split; class 0 is No and class 1 is Yes.")
 
     st.subheader("Variables used by the tree")
     st.dataframe(
